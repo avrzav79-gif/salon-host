@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pool House — Control de Mesas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f0e8;--surface:#fffdf8;--surface2:#eee9de;
+  --ink:#1a1a14;--ink2:#4a4a3a;--ink3:#8a8a72;
+  --accent:#c84b2f;--accent2:#e8623e;
+  --teal:#1a6b5a;--teal2:#22947a;
+  --gold:#b8860b;
+  --border:#d4cebf;--border2:#c0b9a8;
+  --shadow:rgba(26,26,20,.10);
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes pop{0%{transform:scale(.9);opacity:0}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);min-height:100%}
+
+/* LOADER */
+.loader{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:999}
+.loader-ring{width:72px;height:72px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--accent);animation:spin .75s linear infinite;position:absolute}
+.loader-ball{width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;font-family:'Syne',sans-serif}
+.loader-wrap{position:relative;width:72px;height:72px;display:flex;align-items:center;justify-content:center}
+.loader p{color:rgba(255,255,255,.4);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-top:8px}
+
+/* TOPBAR */
+.topbar{background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.5rem;position:sticky;top:0;z-index:50;border-bottom:3px solid var(--accent)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-ball{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;border:2px solid rgba(255,255,255,.18);flex-shrink:0}
+.brand-name{font-size:17px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.brand-sub{font-size:10px;color:rgba(245,240,232,.45);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.topright{display:flex;align-items:center;gap:14px}
+.live-pill{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.1em;color:rgba(245,240,232,.55);text-transform:uppercase}
+.ldot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 1.6s ease infinite;flex-shrink:0}
+.ldot.off{background:#f87171;animation:none}
+.clock{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--bg)}
+
+/* SYNC BAR */
+.syncbar{font-size:10px;text-align:center;padding:5px;letter-spacing:.09em;text-transform:uppercase;background:#14532d;color:#86efac}
+.syncbar.err{background:#7f1d1d;color:#fca5a5}
+.syncbar.warn{background:#78350f;color:#fcd34d}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface2);border-bottom:1px solid var(--border)}
+.stat{padding:1rem 1.25rem;border-right:1px solid var(--border);position:relative;overflow:hidden}
+.stat:last-child{border-right:none}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.stat:nth-child(1)::after{background:var(--accent)}
+.stat:nth-child(2)::after{background:var(--teal)}
+.stat:nth-child(3)::after{background:var(--gold)}
+.stat:nth-child(4)::after{background:var(--ink)}
+.snum{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;line-height:1;color:var(--ink)}
+.snum.red{color:var(--accent)}.snum.teal{color:var(--teal)}.snum.gold{color:var(--gold)}
+.slbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-top:4px}
+
+/* MAIN */
+.main{padding:1.25rem;max-width:1200px;margin:0 auto}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.sh-title{font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:var(--ink3)}
+.sh-cnt{font-size:11px;background:var(--accent);color:#fff;border-radius:20px;padding:2px 9px;font-weight:700}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px;margin-bottom:1.5rem}
+
+/* CARD */
+.card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s;animation:fadeIn .4s ease both}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow);border-color:var(--border2)}
+.card.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,107,90,.1)}
+.card-stripe{height:4px;background:var(--surface2)}
+.card.on .card-stripe{background:var(--teal)}
+.card.vip .card-stripe{background:var(--accent)}
+.card-body{padding:1rem}
+.ctop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tid{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:500;line-height:1;color:var(--ink)}
+.card.vip .tid{color:var(--accent)}
+.bdg{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.bdg-f{background:var(--surface2);color:var(--ink3);border:1px solid var(--border)}
+.bdg-on{background:rgba(26,107,90,.1);color:var(--teal);border:1px solid rgba(26,107,90,.28)}
+.viptag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+
+.pmain{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--ink);line-height:1;margin:5px 0 2px;transition:color .3s}
+.pmain.on{color:var(--teal)}
+.timer{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);min-height:17px;margin-bottom:7px}
+.sep{height:1px;background:var(--border);margin:8px 0}
+.mrow{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.mrow .l{color:var(--ink3)}.mrow .v{color:var(--ink2);font-weight:500;font-family:'JetBrains Mono',monospace}
+
+/* PRODS */
+.plist{margin-top:7px}
+.pchip{display:flex;align-items:center;gap:4px;background:var(--surface2);border-radius:8px;padding:5px 8px;margin-bottom:4px;animation:pop .2s ease both}
+.pchip-nm{flex:1;font-size:11px;color:var(--ink2)}
+.pchip-pr{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:500;margin-right:6px}
+.pchip-del{background:none;border:none;cursor:pointer;color:var(--ink3);font-size:12px;line-height:1;padding:0;transition:color .15s}
+.pchip-del:hover{color:var(--accent)}
+.psubtotal{display:flex;justify-content:space-between;font-size:11px;padding:5px 0 0;border-top:1px dashed var(--border);margin-top:3px}
+.psubtotal .l{color:var(--ink3)}.psubtotal .v{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold)}
+
+/* BTN */
+.btn-add{width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;color:var(--ink3);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.btn-add:hover{border-color:var(--teal);color:var(--teal);background:rgba(26,107,90,.04)}
+.btn-start{width:100%;margin-top:8px;padding:11px;border-radius:10px;border:none;background:var(--teal);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:background .15s,transform .1s}
+.btn-start:hover{background:var(--teal2)}.btn-start:active{transform:scale(.97)}
+.btn-stop{width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--ink2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:all .15s}
+.btn-stop:hover{border-color:var(--accent);color:var(--accent)}.btn-stop:active{transform:scale(.97)}
+
+/* COBRO MODAL */
+.cobro-box{background:rgba(26,107,90,.08);border:1.5px solid rgba(26,107,90,.25);border-radius:10px;padding:.875rem;margin-top:8px}
+.cobro-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.cobro-row .l{color:var(--ink3)}.cobro-row .v{font-family:'JetBrains Mono',monospace;color:var(--ink2)}
+.cobro-total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:6px;padding-top:6px;border-top:1px solid rgba(26,107,90,.2)}
+.cobro-total .v{font-family:'JetBrains Mono',monospace;color:var(--teal)}
+.cobro-note{font-size:10px;color:var(--ink3);margin-top:4px;text-align:right;font-style:italic}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(26,26,20,.62);display:flex;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+@media(min-width:600px){.overlay{align-items:center;padding:1rem}}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;animation:fadeIn .22s ease both;border:1.5px solid var(--border)}
+@media(min-width:600px){.modal{border-radius:20px}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem}
+.mtitle{font-size:17px;font-weight:800;color:var(--ink);margin-bottom:3px}
+.msub{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:1rem}
+.mcat{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--ink3);margin-bottom:.5rem;font-weight:700}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.pbtn{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:.75rem .875rem;cursor:pointer;text-align:left;transition:all .15s;font-family:'Syne',sans-serif}
+.pbtn:hover{border-color:var(--teal);background:rgba(26,107,90,.05);transform:scale(.98)}.pbtn:active{transform:scale(.95)}
+.pbtn-nm{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:3px}
+.pbtn-pr{font-size:13px;font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:500}
+.msep{height:1px;background:var(--border);margin:.875rem 0}
+.crow{display:flex;gap:8px;margin-bottom:.875rem}
+.inp{flex:1;padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--teal)}.inp::placeholder{color:var(--ink3)}
+.inp-sm{flex:none;width:108px}
+.mbtn-add{width:100%;padding:12px;border-radius:10px;background:var(--teal);color:#fff;border:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;margin-bottom:8px;transition:background .15s}
+.mbtn-add:hover{background:var(--teal2)}
+.mbtn-cancel{width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--ink3);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s}
+.mbtn-cancel:hover{border-color:var(--ink2)}
+
+/* HISTORIAL */
+.hist-section{background:var(--surface2);border-top:1.5px solid var(--border);padding:1.25rem}
+.hitem{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:6px;animation:fadeIn .3s ease both}
+.hleft .hn{font-size:13px;font-weight:700;color:var(--ink)}
+.hleft .hd{font-size:11px;color:var(--ink3);margin-top:2px}
+.hright{font-size:20px;font-weight:800;color:var(--accent);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+
+@media(max-width:500px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2){border-right:none}
+  .stat:nth-child(3){border-top:1px solid var(--border)}
+  .topbar{padding:.75rem 1rem}
+  .main{padding:1rem}
+  .snum{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="loader-wrap">
+    <div class="loader-ring"></div>
+    <div class="loader-ball">8</div>
+  </div>
+  <p>Conectando...</p>
+</div>
+
+<div id="root" style="display:none">
+  <div class="syncbar" id="syncBar">Conectando...</div>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-ball">8</div>
+      <div>
+        <div class="brand-name">Pool House</div>
+        <div class="brand-sub">Sistema de mesas</div>
+      </div>
+    </div>
+    <div class="topright">
+      <div class="live-pill"><div class="ldot" id="ldot"></div><span id="llbl">En vivo</span></div>
+      <div class="clock" id="clk">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="snum red" id="sA">0</div><div class="slbl">Mesas activas</div></div>
+    <div class="stat"><div class="snum teal" id="sL">$0</div><div class="slbl">En curso</div></div>
+    <div class="stat"><div class="snum gold" id="sP">$0</div><div class="slbl">Productos activos</div></div>
+    <div class="stat"><div class="snum" id="sT">$0</div><div class="slbl">Recaudado hoy</div></div>
+  </div>
+
+  <div class="main">
+    <div class="sh">
+      <div class="sh-title">Mesas</div>
+      <div class="sh-cnt" id="aCnt">0 activas</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="hist-section" id="histSec" style="display:none">
+    <div class="main" style="padding-top:0;padding-bottom:0">
+      <div class="sh"><div class="sh-title">Sesiones cerradas hoy</div></div>
+      <div id="histList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov" style="display:none" onclick="ovClick(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="mtitle" id="mt">Agregar producto</div>
+    <div class="msub" id="ms">Selecciona del menú</div>
+    <div class="mcat">Menú rápido</div>
+    <div class="pgrid" id="pgrid"></div>
+    <div class="msep"></div>
+    <div class="mcat">Personalizado</div>
+    <div class="crow">
+      <input class="inp" id="cN" placeholder="Nombre del producto">
+      <input class="inp inp-sm" id="cP" placeholder="Precio $" type="number">
+    </div>
+    <button class="mbtn-add" onclick="submitC()">Agregar</button>
+    <button class="mbtn-cancel" onclick="closeM()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// FIREBASE — Reemplaza estos valores con tu propio proyecto
+// Crear uno gratis en https://console.firebase.google.com
+// ══════════════════════════════════════════════════════════════
+const FB = {
+  apiKey: "AIzaSyC8PdUMYzNF8EBx8YlOp4Q9D1ZxVSExample",
+  authDomain: "pool-house-demo.firebaseapp.com",
+  databaseURL: "https://pool-house-demo-default-rtdb.firebaseio.com",
+  projectId: "pool-house-demo",
+};
+
+const CATALOG = [
+  {name:'Cerveza',price:2500},{name:'Agua',price:1200},
+  {name:'Jugo',price:1800},{name:'Gaseosa',price:1500},
+  {name:'Empanada',price:2000},{name:'Completo',price:3500},
+  {name:'Papas fritas',price:3000},{name:'Café',price:1500},
+];
+const TABLES = [
+  {id:1,rate:5000,vip:true},
+  {id:2,rate:3500},{id:3,rate:3500},{id:4,rate:3500},
+  {id:5,rate:3500},{id:6,rate:3500},{id:7,rate:3500},{id:8,rate:3500},
+];
+
+// ── ESTADO ────────────────────────────────────────────────────
+let ST = {};     // {id: {on,start,prods}}
+let HIST = [];
+let closedTotal = 0;
+let modalT = null;
+let db = null;
+let online = false;
+
+// Inicializar estado por si firebase falla
+TABLES.forEach(t => { ST[t.id] = {on:false,start:null,prods:[]}; });
+
+// ── HELPERS ───────────────────────────────────────────────────
+// Redondeo a la centena más cercana
+const round100 = n => Math.round(n / 100) * 100;
+const clp = n => '$' + Math.round(n).toLocaleString('es-CL');
+const clpR = n => '$' + round100(n).toLocaleString('es-CL');
+function hms(ms) {
+  const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+  return (h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+}
+const tPrice = (id,now) => {
+  const s=ST[id]; if(!s?.on) return 0;
+  return ((now-s.start)/3600000)*TABLES.find(x=>x.id===id).rate;
+};
+const pTotal = id => (ST[id]?.prods||[]).reduce((a,p)=>a+p.price,0);
+
+// ── FIREBASE ──────────────────────────────────────────────────
+function initFB() {
+  try {
+    firebase.initializeApp(FB);
+    db = firebase.database();
+
+    db.ref('.info/connected').on('value', s => {
+      online = s.val()===true;
+      setSyncBar(online ? 'ok' : 'err');
+    });
+
+    db.ref('state').on('value', s => {
+      const v = s.val();
+      if (v) {
+        TABLES.forEach(t => {
+          ST[t.id] = v[t.id] || {on:false,start:null,prods:[]};
+          if (!ST[t.id].prods) ST[t.id].prods = [];
+        });
+      }
+      render();
+    });
+
+    db.ref('history').on('value', s => {
+      const v = s.val();
+      HIST = v ? Object.values(v).sort((a,b)=>b.ts-a.ts) : [];
+      closedTotal = HIST.reduce((a,h)=>a+h.total,0);
+      renderHist();
+    });
+
+    show();
+  } catch(e) {
+    console.warn('Firebase no disponible, modo local:', e);
+    setSyncBar('warn');
+    show();
+    render();
+  }
+}
+
+function setSyncBar(s) {
+  const bar = document.getElementById('syncBar');
+  const dot = document.getElementById('ldot');
+  if (s==='ok') {
+    bar.textContent = '● Sincronizado en tiempo real — computador y celular ven lo mismo';
+    bar.className = 'syncbar';
+    dot.className = 'ldot';
+  } else if (s==='warn') {
+    bar.textContent = '⚠ Modo local — configura Firebase para sincronizar dispositivos';
+    bar.className = 'syncbar warn';
+    dot.className = 'ldot off';
+  } else {
+    bar.textContent = '✕ Sin conexión — los cambios se aplicarán al reconectar';
+    bar.className = 'syncbar err';
+    dot.className = 'ldot off';
+  }
+}
+
+function show() {
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('root').style.display = 'block';
+}
+
+function push(path, val) {
+  if (db) db.ref(path).set(val).catch(()=>{});
+}
+
+// ── ACCIONES ──────────────────────────────────────────────────
+function startT(id) {
+  ST[id] = {on:true,start:Date.now(),prods:[]};
+  push('state/'+id, ST[id]);
+  render();
+}
+
+function stopT(id) {
+  const now = Date.now();
+  const tp = tPrice(id,now);
+  const pp = pTotal(id);
+  const total = round100(tp+pp);
+  const t = TABLES.find(x=>x.id===id);
+  const entry = {
+    name:'Mesa '+id, elapsed:now-ST[id].start,
+    tableAmt:round100(tp), prodAmt:round100(pp),
+    total, time:new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    ts:now
+  };
+  ST[id] = {on:false,start:null,prods:[]};
+  push('state/'+id, ST[id]);
+  push('history/'+now, entry);
+  render();
+}
+
+function rmProd(tableId,idx) {
+  const prods = [...(ST[tableId]?.prods||[])];
+  prods.splice(idx,1);
+  ST[tableId].prods = prods;
+  push('state/'+tableId, ST[tableId]);
+  render();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openM(id) {
+  modalT = id;
+  document.getElementById('mt').textContent = 'Agregar producto';
+  document.getElementById('ms').textContent = 'Mesa '+id+' — selecciona del menú';
+  document.getElementById('cN').value = '';
+  document.getElementById('cP').value = '';
+  document.getElementById('pgrid').innerHTML = CATALOG.map(p=>`
+    <button class="pbtn" onclick="addP('${p.name}',${p.price})">
+      <span class="pbtn-nm">${p.name}</span>
+      <span class="pbtn-pr">${clp(p.price)}</span>
+    </button>`).join('');
+  document.getElementById('ov').style.display = 'flex';
+}
+function closeM() { document.getElementById('ov').style.display='none'; modalT=null; }
+function ovClick(e) { if(e.target===document.getElementById('ov')) closeM(); }
+function addP(name,price) {
+  if(!modalT) return;
+  const prods = [...(ST[modalT]?.prods||[])];
+  prods.push({name,price:+price});
+  ST[modalT].prods = prods;
+  push('state/'+modalT, ST[modalT]);
+  closeM();
+  render();
+}
+function submitC() {
+  const n=document.getElementById('cN').value.trim();
+  const p=parseFloat(document.getElementById('cP').value);
+  if(!n||!p||isNaN(p)) return;
+  addP(n,p);
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render() {
+  const now = Date.now();
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  TABLES.forEach((t,i) => {
+    const s = ST[t.id]||{on:false,start:null,prods:[]};
+    const tp = s.on ? tPrice(t.id,now) : 0;
+    const pp = pTotal(t.id);
+    const total = tp+pp;
+
+    const card = document.createElement('div');
+    card.className = 'card'+(s.on?' on':'')+(t.vip?' vip':'');
+    card.style.animationDelay = (i*.05)+'s';
+
+    const prodsH = (s.prods||[]).length ? `
+      <div class="plist">
+        ${s.prods.map((p,idx)=>`
+          <div class="pchip">
+            <span class="pchip-nm">${p.name}</span>
+            <span class="pchip-pr">${clp(p.price)}</span>
+            <button class="pchip-del" onclick="rmProd(${t.id},${idx})">✕</button>
+          </div>`).join('')}
+        <div class="psubtotal">
+          <span class="l">Subtotal productos</span>
+          <span class="v">${clp(pp)}</span>
+        </div>
+      </div>` : '';
+
+    // Mostrar cobro redondeado si está activa
+    const cobroH = s.on ? `
+      <div class="cobro-box">
+        <div class="cobro-row"><span class="l">Mesa (${hms(now-s.start)})</span><span class="v">${clpR(tp)}</span></div>
+        ${pp>0?`<div class="cobro-row"><span class="l">Productos</span><span class="v">${clpR(pp)}</span></div>`:''}
+        <div class="cobro-total"><span>Total a cobrar</span><span class="v">${clpR(total)}</span></div>
+        <div class="cobro-note">Redondeado a la centena</div>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="card-stripe"></div>
+      <div class="card-body">
+        <div class="ctop">
+          <div class="tid">${String(t.id).padStart(2,'0')}</div>
+          <span class="bdg ${s.on?'bdg-on':'bdg-f'}">${s.on?'Ocupada':'Libre'}</span>
+        </div>
+        ${t.vip?'<div class="viptag">★ Mesa VIP</div>':''}
+        <div class="pmain ${s.on?'on':''}" id="pr-${t.id}">${s.on?clp(total):'—'}</div>
+        <div class="timer" id="tm-${t.id}">${s.on?hms(now-s.start):''}</div>
+        <div class="sep"></div>
+        <div class="mrow"><span class="l">Tarifa/hora</span><span class="v">${clp(t.rate)}</span></div>
+        ${s.on?`<div class="mrow"><span class="l">Solo mesa</span><span class="v" id="mp-${t.id}">${clp(tp)}</span></div>`:''}
+        ${prodsH}
+        ${cobroH}
+        ${s.on?`<button class="btn-add" onclick="openM(${t.id})">+ Producto</button>`:''}
+        ${s.on
+          ?`<button class="btn-stop" onclick="stopT(${t.id})">Cobrar · ${clpR(total)}</button>`
+          :`<button class="btn-start" onclick="startT(${t.id})">Iniciar mesa</button>`}
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  updateStats(now);
+}
+
+function updateStats(now) {
+  let a=0,live=0,livep=0;
+  TABLES.forEach(t => {
+    if(ST[t.id]?.on){a++;live+=tPrice(t.id,now);livep+=pTotal(t.id);}
+  });
+  document.getElementById('sA').textContent = a;
+  document.getElementById('sL').textContent = clp(live);
+  document.getElementById('sP').textContent = clp(livep);
+  document.getElementById('sT').textContent = clp(closedTotal);
+  document.getElementById('aCnt').textContent = a+(a===1?' activa':' activas');
+}
+
+function renderHist() {
+  const sec = document.getElementById('histSec');
+  const list = document.getElementById('histList');
+  if(!HIST.length){sec.style.display='none';return}
+  sec.style.display='block';
+  list.innerHTML = HIST.slice(0,20).map(h=>`
+    <div class="hitem">
+      <div class="hleft">
+        <div class="hn">${h.name}</div>
+        <div class="hd">${h.time} · ${hms(h.elapsed)}${h.prodAmt>0?' · Productos '+clpR(h.prodAmt):''}</div>
+      </div>
+      <div class="hright">${clpR(h.total)}</div>
+    </div>`).join('');
+}
+
+// ── TICK ──────────────────────────────────────────────────────
+setInterval(()=>{
+  const now = Date.now();
+  document.getElementById('clk').textContent = new Date().toLocaleTimeString('es-CL');
+  let live=0,livep=0;
+  TABLES.forEach(t=>{
+    if(!ST[t.id]?.on) return;
+    const tp=tPrice(t.id,now), pp=pTotal(t.id);
+    live+=tp; livep+=pp;
+    const pe=document.getElementById('pr-'+t.id);
+    const te=document.getElementById('tm-'+t.id);
+    const mp=document.getElementById('mp-'+t.id);
+    if(pe) pe.textContent=clp(tp+pp);
+    if(te) te.textContent=hms(now-ST[t.id].start);
+    if(mp) mp.textContent=clp(tp);
+  });
+  document.getElementById('sL').textContent=clp(live);
+  document.getElementById('sP').textContent=clp(livep);
+  document.getElementById('sA').textContent=TABLES.filter(t=>ST[t.id]?.on).length;
+},1000);
+
+initFB();
+</script>
+</body>
+</html>
