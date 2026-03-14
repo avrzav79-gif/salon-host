@@ -25,14 +25,12 @@
 
 html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);min-height:100%}
 
-/* LOADER */
 .loader{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:999}
 .loader-ring{width:72px;height:72px;border-radius:50%;border:3px solid rgba(255,255,255,.1);border-top-color:var(--accent);animation:spin .75s linear infinite;position:absolute}
-.loader-ball{width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;font-family:'Syne',sans-serif}
+.loader-ball{width:52px;height:52px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff}
 .loader-wrap{position:relative;width:72px;height:72px;display:flex;align-items:center;justify-content:center}
 .loader p{color:rgba(255,255,255,.4);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-top:8px}
 
-/* TOPBAR */
 .topbar{background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.5rem;position:sticky;top:0;z-index:50;border-bottom:3px solid var(--accent)}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-ball{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;border:2px solid rgba(255,255,255,.18);flex-shrink:0}
@@ -44,12 +42,10 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 .ldot.off{background:#f87171;animation:none}
 .clock{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--bg)}
 
-/* SYNC BAR */
 .syncbar{font-size:10px;text-align:center;padding:5px;letter-spacing:.09em;text-transform:uppercase;background:#14532d;color:#86efac}
 .syncbar.err{background:#7f1d1d;color:#fca5a5}
 .syncbar.warn{background:#78350f;color:#fcd34d}
 
-/* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--surface2);border-bottom:1px solid var(--border)}
 .stat{padding:1rem 1.25rem;border-right:1px solid var(--border);position:relative;overflow:hidden}
 .stat:last-child{border-right:none}
@@ -62,16 +58,13 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 .snum.red{color:var(--accent)}.snum.teal{color:var(--teal)}.snum.gold{color:var(--gold)}
 .slbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-top:4px}
 
-/* MAIN */
 .main{padding:1.25rem;max-width:1200px;margin:0 auto}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
 .sh-title{font-size:11px;text-transform:uppercase;letter-spacing:.18em;font-weight:700;color:var(--ink3)}
 .sh-cnt{font-size:11px;background:var(--accent);color:#fff;border-radius:20px;padding:2px 9px;font-weight:700}
 
-/* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px;margin-bottom:1.5rem}
 
-/* CARD */
 .card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;transition:transform .2s,border-color .2s,box-shadow .2s;animation:fadeIn .4s ease both}
 .card:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow);border-color:var(--border2)}
 .card.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(26,107,90,.1)}
@@ -94,7 +87,6 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 .mrow{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
 .mrow .l{color:var(--ink3)}.mrow .v{color:var(--ink2);font-weight:500;font-family:'JetBrains Mono',monospace}
 
-/* PRODS */
 .plist{margin-top:7px}
 .pchip{display:flex;align-items:center;gap:4px;background:var(--surface2);border-radius:8px;padding:5px 8px;margin-bottom:4px;animation:pop .2s ease both}
 .pchip-nm{flex:1;font-size:11px;color:var(--ink2)}
@@ -104,7 +96,13 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 .psubtotal{display:flex;justify-content:space-between;font-size:11px;padding:5px 0 0;border-top:1px dashed var(--border);margin-top:3px}
 .psubtotal .l{color:var(--ink3)}.psubtotal .v{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold)}
 
-/* BTN */
+.cobro-box{background:rgba(26,107,90,.07);border:1.5px solid rgba(26,107,90,.2);border-radius:10px;padding:.875rem;margin-top:8px}
+.cobro-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.cobro-row .l{color:var(--ink3)}.cobro-row .v{font-family:'JetBrains Mono',monospace;color:var(--ink2)}
+.cobro-total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:6px;padding-top:6px;border-top:1px solid rgba(26,107,90,.2)}
+.cobro-total .v{font-family:'JetBrains Mono',monospace;color:var(--teal)}
+.cobro-note{font-size:10px;color:var(--ink3);margin-top:4px;text-align:right;font-style:italic}
+
 .btn-add{width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;color:var(--ink3);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:all .15s}
 .btn-add:hover{border-color:var(--teal);color:var(--teal);background:rgba(26,107,90,.04)}
 .btn-start{width:100%;margin-top:8px;padding:11px;border-radius:10px;border:none;background:var(--teal);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:background .15s,transform .1s}
@@ -112,15 +110,6 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 .btn-stop{width:100%;margin-top:8px;padding:11px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--ink2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;transition:all .15s}
 .btn-stop:hover{border-color:var(--accent);color:var(--accent)}.btn-stop:active{transform:scale(.97)}
 
-/* COBRO MODAL */
-.cobro-box{background:rgba(26,107,90,.08);border:1.5px solid rgba(26,107,90,.25);border-radius:10px;padding:.875rem;margin-top:8px}
-.cobro-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
-.cobro-row .l{color:var(--ink3)}.cobro-row .v{font-family:'JetBrains Mono',monospace;color:var(--ink2)}
-.cobro-total{display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:6px;padding-top:6px;border-top:1px solid rgba(26,107,90,.2)}
-.cobro-total .v{font-family:'JetBrains Mono',monospace;color:var(--teal)}
-.cobro-note{font-size:10px;color:var(--ink3);margin-top:4px;text-align:right;font-style:italic}
-
-/* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(26,26,20,.62);display:flex;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
 @media(min-width:600px){.overlay{align-items:center;padding:1rem}}
 .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;animation:fadeIn .22s ease both;border:1.5px solid var(--border)}
@@ -144,7 +133,6 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 .mbtn-cancel{width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--ink3);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s}
 .mbtn-cancel:hover{border-color:var(--ink2)}
 
-/* HISTORIAL */
 .hist-section{background:var(--surface2);border-top:1.5px solid var(--border);padding:1.25rem}
 .hitem{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:6px;animation:fadeIn .3s ease both}
 .hleft .hn{font-size:13px;font-weight:700;color:var(--ink)}
@@ -179,11 +167,11 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
       <div class="brand-ball">8</div>
       <div>
         <div class="brand-name">Pool House</div>
-        <div class="brand-sub">Sistema de mesas</div>
+        <div class="brand-sub">Control de mesas</div>
       </div>
     </div>
     <div class="topright">
-      <div class="live-pill"><div class="ldot" id="ldot"></div><span id="llbl">En vivo</span></div>
+      <div class="live-pill"><div class="ldot" id="ldot"></div><span>En vivo</span></div>
       <div class="clock" id="clk">--:--:--</div>
     </div>
   </div>
@@ -230,15 +218,18 @@ html,body{background:var(--bg);font-family:'Syne',sans-serif;color:var(--ink);mi
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════
-// FIREBASE — Reemplaza estos valores con tu propio proyecto
-// Crear uno gratis en https://console.firebase.google.com
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CREDENCIALES FIREBASE — Salon Host de Angelo
+// ══════════════════════════════════════════════════
 const FB = {
-  apiKey: "AIzaSyC8PdUMYzNF8EBx8YlOp4Q9D1ZxVSExample",
-  authDomain: "pool-house-demo.firebaseapp.com",
-  databaseURL: "https://pool-house-demo-default-rtdb.firebaseio.com",
-  projectId: "pool-house-demo",
+  apiKey: "AIzaSyAOI4Uz3sHTaDnmtjXn3qvanTqC0sm-QcI",
+  authDomain: "salon-host.firebaseapp.com",
+  databaseURL: "https://salon-host-default-rtdb.firebaseio.com",
+  projectId: "salon-host",
+  storageBucket: "salon-host.firebasestorage.app",
+  messagingSenderId: "918125976760",
+  appId: "1:918125976760:web:a7b2e4ea800d15e5f5e84d",
+  measurementId: "G-01YJKKJ5S3"
 };
 
 const CATALOG = [
@@ -253,19 +244,15 @@ const TABLES = [
   {id:5,rate:3500},{id:6,rate:3500},{id:7,rate:3500},{id:8,rate:3500},
 ];
 
-// ── ESTADO ────────────────────────────────────────────────────
-let ST = {};     // {id: {on,start,prods}}
+let ST = {};
 let HIST = [];
 let closedTotal = 0;
 let modalT = null;
 let db = null;
 let online = false;
 
-// Inicializar estado por si firebase falla
 TABLES.forEach(t => { ST[t.id] = {on:false,start:null,prods:[]}; });
 
-// ── HELPERS ───────────────────────────────────────────────────
-// Redondeo a la centena más cercana
 const round100 = n => Math.round(n / 100) * 100;
 const clp = n => '$' + Math.round(n).toLocaleString('es-CL');
 const clpR = n => '$' + round100(n).toLocaleString('es-CL');
@@ -279,7 +266,6 @@ const tPrice = (id,now) => {
 };
 const pTotal = id => (ST[id]?.prods||[]).reduce((a,p)=>a+p.price,0);
 
-// ── FIREBASE ──────────────────────────────────────────────────
 function initFB() {
   try {
     firebase.initializeApp(FB);
@@ -310,7 +296,7 @@ function initFB() {
 
     show();
   } catch(e) {
-    console.warn('Firebase no disponible, modo local:', e);
+    console.warn('Error Firebase:', e);
     setSyncBar('warn');
     show();
     render();
@@ -321,15 +307,15 @@ function setSyncBar(s) {
   const bar = document.getElementById('syncBar');
   const dot = document.getElementById('ldot');
   if (s==='ok') {
-    bar.textContent = '● Sincronizado en tiempo real — computador y celular ven lo mismo';
+    bar.textContent = '● Sincronizado en tiempo real — todos los dispositivos ven lo mismo';
     bar.className = 'syncbar';
     dot.className = 'ldot';
   } else if (s==='warn') {
-    bar.textContent = '⚠ Modo local — configura Firebase para sincronizar dispositivos';
+    bar.textContent = '⚠ Sin conexión a Firebase — modo local';
     bar.className = 'syncbar warn';
     dot.className = 'ldot off';
   } else {
-    bar.textContent = '✕ Sin conexión — los cambios se aplicarán al reconectar';
+    bar.textContent = '✕ Sin conexión — reconectando...';
     bar.className = 'syncbar err';
     dot.className = 'ldot off';
   }
@@ -344,7 +330,6 @@ function push(path, val) {
   if (db) db.ref(path).set(val).catch(()=>{});
 }
 
-// ── ACCIONES ──────────────────────────────────────────────────
 function startT(id) {
   ST[id] = {on:true,start:Date.now(),prods:[]};
   push('state/'+id, ST[id]);
@@ -356,7 +341,6 @@ function stopT(id) {
   const tp = tPrice(id,now);
   const pp = pTotal(id);
   const total = round100(tp+pp);
-  const t = TABLES.find(x=>x.id===id);
   const entry = {
     name:'Mesa '+id, elapsed:now-ST[id].start,
     tableAmt:round100(tp), prodAmt:round100(pp),
@@ -377,7 +361,6 @@ function rmProd(tableId,idx) {
   render();
 }
 
-// ── MODAL ─────────────────────────────────────────────────────
 function openM(id) {
   modalT = id;
   document.getElementById('mt').textContent = 'Agregar producto';
@@ -409,7 +392,6 @@ function submitC() {
   addP(n,p);
 }
 
-// ── RENDER ────────────────────────────────────────────────────
 function render() {
   const now = Date.now();
   const grid = document.getElementById('grid');
@@ -439,13 +421,12 @@ function render() {
         </div>
       </div>` : '';
 
-    // Mostrar cobro redondeado si está activa
     const cobroH = s.on ? `
       <div class="cobro-box">
         <div class="cobro-row"><span class="l">Mesa (${hms(now-s.start)})</span><span class="v">${clpR(tp)}</span></div>
         ${pp>0?`<div class="cobro-row"><span class="l">Productos</span><span class="v">${clpR(pp)}</span></div>`:''}
         <div class="cobro-total"><span>Total a cobrar</span><span class="v">${clpR(total)}</span></div>
-        <div class="cobro-note">Redondeado a la centena</div>
+        <div class="cobro-note">Redondeado a la centena más cercana</div>
       </div>` : '';
 
     card.innerHTML = `
@@ -501,7 +482,6 @@ function renderHist() {
     </div>`).join('');
 }
 
-// ── TICK ──────────────────────────────────────────────────────
 setInterval(()=>{
   const now = Date.now();
   document.getElementById('clk').textContent = new Date().toLocaleTimeString('es-CL');
